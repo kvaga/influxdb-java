@@ -13,7 +13,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.net.http.HttpResponse;
+
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,13 +30,12 @@ import org.apache.hc.core5.net.URIBuilder;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import jdk.internal.jline.internal.Log;
 
-public class InfluxDB {
-	private static Logger log = LogManager.getLogger(InfluxDB.class);
+public class _InfluxDB {
+	private static Logger log = LogManager.getLogger(_InfluxDB.class);
 	// TODO:
 	// https://www.baeldung.com/java-influxdb
-	private static InfluxDB influxdb = null;
+	private static _InfluxDB influxdb = null;
 	private static boolean ENABLED = false;
 	private int THREADS_NUMBER=10;
 	private static ExecutorService exec;
@@ -47,7 +46,7 @@ public class InfluxDB {
 	private int port;
 	private String dbName;
 
-	private InfluxDB(String host, int port, String dbName, int threadsNumber) {
+	private _InfluxDB(String host, int port, String dbName, int threadsNumber) {
 		this.host = host;
 		this.port = port;
 		this.dbName = dbName;
@@ -55,15 +54,15 @@ public class InfluxDB {
 		exec = Executors.newFixedThreadPool(THREADS_NUMBER);
 	}
 
-	public static InfluxDB getInstance(String host, int port, String dbName, int threadsNumber) {
+	public static _InfluxDB getInstance(String host, int port, String dbName, int threadsNumber) {
 		if (influxdb == null) {
-			influxdb = new InfluxDB(host, port, dbName, threadsNumber);
+			influxdb = new _InfluxDB(host, port, dbName, threadsNumber);
 		}
 		return influxdb;
 	}
 	
 	
-	public static InfluxDB getInstance() {
+	public static _InfluxDB getInstance() {
 		return influxdb;
 	}
 	
@@ -78,7 +77,7 @@ public class InfluxDB {
 	 */
 	public void send(String metric, String value)  {
 		if (!ENABLED)
-			return;
+			return; 
 		exec.execute(new SendTask(metric, value, host, port, dbName, _countOfAttemptsIfFails, _timeout));
 	}
 	public void send(String metric, int value)  {

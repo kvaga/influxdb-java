@@ -5,17 +5,16 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Pong;
 
 
-public class InfluxDB2 {
-	private static Logger log = LogManager.getLogger(InfluxDB2.class);
+public class InfluxDB {
+	private static Logger log = LogManager.getLogger(InfluxDB.class);
 
-	private static InfluxDB influxDB = null;
-	private static InfluxDB2 thisInstance;
+	private static org.influxdb.InfluxDB influxDB = null;
+	private static InfluxDB thisInstance;
 	private String influxdbDatabaseName;
 	private String influxdbHost;
 	private int	influxdbPort=8086;
@@ -24,7 +23,7 @@ public class InfluxDB2 {
 	private String userName="q";
 	private String userPassword="w";
 	
-	private InfluxDB2(String influxdbHost, int influxdbPort, String influxdbDatabaseName, String userName, String userPassword, String retentionPolicyName, String retentionPolicyDuration) {
+	private InfluxDB(String influxdbHost, int influxdbPort, String influxdbDatabaseName, String userName, String userPassword, String retentionPolicyName, String retentionPolicyDuration) {
 		this.influxdbHost = influxdbHost;
 		this.influxdbPort = influxdbPort;
 		this.influxdbDatabaseName = influxdbDatabaseName;
@@ -47,7 +46,7 @@ public class InfluxDB2 {
 		
 		String databaseURL=String.format("http://%s:%d?db=%s", influxdbHost, influxdbPort, influxdbDatabaseName);
 		influxDB = InfluxDBFactory.connect(databaseURL, this.userName, this.userPassword);
-		influxDB.setLogLevel(InfluxDB.LogLevel.BASIC);
+		influxDB.setLogLevel(org.influxdb.InfluxDB.LogLevel.BASIC);
 		influxDB.enableBatch(100, 1000, TimeUnit.MILLISECONDS);
 		createDB();
 		influxDB.setRetentionPolicy(this.retentionPolicyName);
@@ -60,24 +59,28 @@ public class InfluxDB2 {
 		}
 	}
 
-	public static InfluxDB2 getInstance(String influxdbHost, int influxdbPort, String influxdbDatabaseName) {
+	public static InfluxDB getInstance(String influxdbHost, int influxdbPort, String influxdbDatabaseName) {
 		if (thisInstance == null) {
-			thisInstance = new InfluxDB2(influxdbHost, influxdbPort, influxdbDatabaseName, null, null, null, null);
+			thisInstance = new InfluxDB(influxdbHost, influxdbPort, influxdbDatabaseName, null, null, null, null);
 		}
 		return thisInstance;
 	}
 	
-	public static InfluxDB2 getInstance(String influxdbUserName, String influxdbUserPassword, String influxdbHost, int influxdbPort, String influxdbDatabaseName) {
+	public static InfluxDB getInstance(String influxdbUserName, String influxdbUserPassword, String influxdbHost, int influxdbPort, String influxdbDatabaseName) {
 		if (thisInstance == null) {
-			thisInstance = new InfluxDB2(influxdbHost, influxdbPort, influxdbDatabaseName, influxdbUserName, influxdbUserPassword, null, null);
+			thisInstance = new InfluxDB(influxdbHost, influxdbPort, influxdbDatabaseName, influxdbUserName, influxdbUserPassword, null, null);
 		}
 		return thisInstance;
 	}
 	
-	public static InfluxDB2 getInstance(String influxdbUserName, String influxdbUserPassword, String influxdbHost, int influxdbPort, String influxdbDatabaseName, String retentionPolicyName, String retentionPolicyDuration) {
+	public static InfluxDB getInstance(String influxdbUserName, String influxdbUserPassword, String influxdbHost, int influxdbPort, String influxdbDatabaseName, String retentionPolicyName, String retentionPolicyDuration) {
 		if (thisInstance == null) {
-			thisInstance = new InfluxDB2(influxdbHost, influxdbPort, influxdbDatabaseName, influxdbUserName, influxdbUserPassword, retentionPolicyName, retentionPolicyDuration);
+			thisInstance = new InfluxDB(influxdbHost, influxdbPort, influxdbDatabaseName, influxdbUserName, influxdbUserPassword, retentionPolicyName, retentionPolicyDuration);
 		}
+		return thisInstance;
+	}
+	
+	public static InfluxDB getInstance() {
 		return thisInstance;
 	}
 	
@@ -92,13 +95,39 @@ public class InfluxDB2 {
 				  .build();
 		send(point);
 	}
+	
+	public void send(String metric, Float value) {
+		Point point = Point.measurement(metric)
+				  .time(System.currentTimeMillis() - 100, TimeUnit.MILLISECONDS)
+				  .addField("v", value)
+				  .build();
+		send(point);
+	}
+	public void send(String metric, Long value) {
+		Point point = Point.measurement(metric)
+				  .time(System.currentTimeMillis() - 100, TimeUnit.MILLISECONDS)
+				  .addField("v", value)
+				  .build();
+		send(point);
+	}
+	public void send(String metric, Double value) {
+		Point point = Point.measurement(metric)
+				  .time(System.currentTimeMillis() - 100, TimeUnit.MILLISECONDS)
+				  .addField("v", value)
+				  .build();
+		send(point);
+	}
 	public void send(Point point) {
+		if(thisInstance==null) {
+			log.error("InfluxDB instance is null. Skip the send request");
+			return;
+		}
 		influxDB.write(point);
 	}
-	public static boolean ping() {
+	public boolean ping() {
 		Pong response = influxDB.ping();
 		if (response.getVersion().equalsIgnoreCase("unknown")) {
-		    System.err.println("Error pinging server.");
+		    log.error("Error pinging server.");
 		    return false;
 		} else {
 			return true;
@@ -113,7 +142,7 @@ public class InfluxDB2 {
 		  retentionPolicyName, influxdbDatabaseName, retentionPolicyDuration, 1, true);
 	}
 	
-	public  void destroy() {
+	public void destroy() {
 		influxDB.close();
 	}
 	
