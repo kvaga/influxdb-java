@@ -1,15 +1,17 @@
-package ru.kvaga.monitoring.influxdb2;
+package ru.kvaga.monitoring.influxdb;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Pong;
 
-
+/**
+ * InfluxDB version 1
+ * @author kvaga
+ *
+ */
 public class InfluxDB {
 	private static Logger log = LogManager.getLogger(InfluxDB.class);
 
@@ -22,7 +24,10 @@ public class InfluxDB {
 	private String retentionPolicyDuration="7d";
 	private String userName="q";
 	private String userPassword="w";
-	
+
+	/**
+	 * InfluxDB v1
+	 */
 	private InfluxDB(String influxdbHost, int influxdbPort, String influxdbDatabaseName, String userName, String userPassword, String retentionPolicyName, String retentionPolicyDuration) {
 		this.influxdbHost = influxdbHost;
 		this.influxdbPort = influxdbPort;
@@ -48,7 +53,7 @@ public class InfluxDB {
 		influxDB = InfluxDBFactory.connect(databaseURL, this.userName, this.userPassword);
 		influxDB.setLogLevel(org.influxdb.InfluxDB.LogLevel.BASIC);
 		influxDB.enableBatch(100, 1000, TimeUnit.MILLISECONDS);
-		createDB();
+//		createDB();
 		influxDB.setRetentionPolicy(this.retentionPolicyName);
 		influxDB.setDatabase(this.influxdbDatabaseName);
 		
@@ -59,6 +64,15 @@ public class InfluxDB {
 		}
 	}
 
+
+	
+	/**
+	 * InfluxDB version 1
+	 * @param influxdbHost
+	 * @param influxdbPort
+	 * @param influxdbDatabaseName
+	 * @return
+	 */
 	public static InfluxDB getInstance(String influxdbHost, int influxdbPort, String influxdbDatabaseName) {
 		if (thisInstance == null) {
 			thisInstance = new InfluxDB(influxdbHost, influxdbPort, influxdbDatabaseName, null, null, null, null);

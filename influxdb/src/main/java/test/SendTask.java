@@ -1,4 +1,4 @@
-package ru.kvaga.monitoring.influxdb;
+package test;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
