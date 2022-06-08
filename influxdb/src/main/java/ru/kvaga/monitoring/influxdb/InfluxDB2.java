@@ -40,6 +40,9 @@ public class InfluxDB2 {
 		return "InfluxDB2 instance parameters [bucket="+bucket+", orgId="+orgId+", url="+url+", token=token]";
 	}
     
+    public static InfluxDB2 getInstance() {
+    	return thisInstance;
+    }
     public static InfluxDB2 getInstance(String url, String orgId, String bucket, String token) {
 		if (thisInstance == null) {
 			thisInstance = new InfluxDB2(url, orgId, bucket, token);
